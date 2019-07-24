@@ -11,6 +11,7 @@ export default class Main extends Component {
         newRepo: '',
         repositories: [],
         loading: false,
+        error: false,
     };
 
     componentDidMount() {
@@ -34,28 +35,37 @@ export default class Main extends Component {
         this.setState({ newRepo: e.target.value });
     };
 
-    handleSubmit = async e => {
-        this.setState({ loading: true });
+    handleSubmit = async (e, prevState) => {
+        try {
+            this.setState({ loading: true });
 
-        e.preventDefault();
+            e.preventDefault();
 
-        const { newRepo, repositories } = this.state;
+            const { newRepo, repositories } = this.state;
 
-        const response = await Api.get(`/repos/${newRepo}`);
+            const hasRepo = repositories.find(r => r.name);
 
-        const data = {
-            name: response.data.full_name,
-        };
+            if (hasRepo) throw 'Repositorio duplicado';
 
-        this.setState({
-            repositories: [...repositories, data],
-            newRepo: '',
-            loading: false,
-        });
+            const response = await Api.get(`/repos/${newRepo}`);
+
+            const data = {
+                name: response.data.full_name,
+            };
+
+            this.setState({
+                repositories: [...repositories, data],
+                newRepo: '',
+                loading: false,
+                error: false,
+            });
+        } catch (error) {
+            this.setState({ error: true, loading: false });
+        }
     };
 
     render() {
-        const { newRepo, loading, repositories } = this.state;
+        const { newRepo, loading, repositories, error } = this.state;
 
         return (
             <Container>
@@ -64,7 +74,7 @@ export default class Main extends Component {
                     Repositorios
                 </h1>
 
-                <Form onSubmit={this.handleSubmit}>
+                <Form onSubmit={this.handleSubmit} error={error}>
                     <input
                         type="text"
                         placeholder="Adicionar repositorio"

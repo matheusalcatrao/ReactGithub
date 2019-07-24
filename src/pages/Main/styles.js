@@ -32,7 +32,16 @@ export const Form = styled.form`
         font-size: 16px;
         padding: 10px 15px;
         border-radius: 4px;
+        background: 0;
     }
+
+    ${props =>
+        props.error &&
+        css`
+            input {
+                border-color: red;
+            }
+        `};
 `;
 
 const rotate = keyframes`
